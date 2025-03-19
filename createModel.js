@@ -1,51 +1,54 @@
 const tf = require('@tensorflow/tfjs');
 
-const kernelSize = [3, 3];
-const filters = 32;
-const numClasses = 2;
-
-
 const model = tf.sequential();
 
-model.add(
-    tf.layers.conv2d({
-        inputShape: [28, 28, 4],
-        filters: filters,
-        kernelSize: kernelSize,
-        activation: "relu"
-    })
-)
+// First convolutional layer
+model.add(tf.layers.conv2d({
+    inputShape: [28, 28, 3],  // Changed to match our input shape (RGB)
+    filters: 32,
+    kernelSize: [3, 3],
+    activation: 'relu'
+}));
 
-model.add(
-    tf.layers.maxPooling2d({
-        poolSize: [2, 2],
+// Max pooling
+model.add(tf.layers.maxPooling2d({
+    poolSize: [2, 2]
+}));
 
-    })
-)
+// Second convolutional layer
+model.add(tf.layers.conv2d({
+    filters: 64,
+    kernelSize: [3, 3],
+    activation: 'relu'
+}));
 
-model.add(tf.layers.flatten())
+// Max pooling
+model.add(tf.layers.maxPooling2d({
+    poolSize: [2, 2]
+}));
 
-model.add(
-    tf.layers.dense({
-        units: 10,
-        activation: "relu"
-    })
-)
+// Flatten the output
+model.add(tf.layers.flatten());
 
-model.add(
-    tf.layers.dense({
-        units: numClasses,
-        activation: "softmax"
-    })
-)
+// Dense layers
+model.add(tf.layers.dense({
+    units: 128,
+    activation: 'relu'
+}));
 
-const optimizer = tf.train.adam(0.0001);
+model.add(tf.layers.dropout(0.5));
 
+model.add(tf.layers.dense({
+    units: 2,  // 2 classes: circle and triangle
+    activation: 'softmax'
+}));
+
+// Compile the model
 model.compile({
-    optimizer: optimizer,
-    loss: "categoricalCrossentropy",
-    metrics: ["accuracy"]
-})
+    optimizer: tf.train.adam(0.001),
+    loss: 'categoricalCrossentropy',
+    metrics: ['accuracy']
+});
 
 module.exports = model;
 
